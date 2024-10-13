@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Registry</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Video Registry</h1>
+
+    <div>
+        <h2>Register Video</h2>
+        <input type="text" id="ipfsHash" placeholder="IPFS Hash">
+        <input type="text" id="account" placeholder="Ethereum Account">
+        <button onclick="registerVideo()">Register</button>
+    </div>
+
+    <div>
+        <h2>Verify Video</h2>
+        <input type="text" id="verifyIpfsHash" placeholder="IPFS Hash">
+        <input type="text" id="verifyAccount" placeholder="Ethereum Account">
+        <button onclick="verifyVideo()">Verify</button>
+    </div>
+
+    <div>
+        <h2>Compare Videos</h2>
+        <input type="text" id="videoPath1" placeholder="Path to Video 1">
+        <input type="text" id="videoPath2" placeholder="Path to Video 2">
+        <button onclick="compareVideos()">Compare</button>
+    </div>
+
+    <script>
+        const web3 = new Web3(Web3.givenProvider || "http://127.0.0.1:8545");
+        const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS';
+        const contractABI = [YOUR_CONTRACT_ABI];
+
+        const videoRegistry = new web3.eth.Contract(contractABI, contractAddress);
+
+        async function registerVideo() {
+            const accounts = await web3.eth.requestAccounts();
+            const ipfsHash = document.getElementById('ipfsHash').value;
+            const account = document.getElementById('account').value;
+            await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ipfs_hash: ipfsHash, account: account })
+            });
+            alert("Video registered");
+        }
+
+        async function verifyVideo() {
+            const ipfsHash = document.getElementById('verifyIpfsHash').value;
+            const account = document.getElementById('verifyAccount').value;
+            const response = await fetch('/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ipfs_hash: ipfsHash, account: account })
+            });
+            const result = await response.json();
+            alert(result.is_registered ? "Video is registered" : "Video is not registered");
+        }
+
+        async function compareVideos() {
+            const videoPath1 = document.getElementById('videoPath1').value;
+            const videoPath2 = document.getElementById('videoPath2').value;
+            const response = await fetch('/compare', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ video_path_1: videoPath1, video_path_2: videoPath2 })
+            });
+            const result = await response.json();
+            alert(result.comparison_result);
+        }
+    </script>
+</body>
+</html>
